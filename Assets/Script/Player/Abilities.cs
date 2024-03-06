@@ -10,6 +10,9 @@ public class Abilities : MonoBehaviour
     public Transform playerTransform;
     public Gameplay gameplay;
 
+    public GameObject moveMarkerPrefab;
+    //public DestroyMoveMarker destroyMoveMarker;
+
     public Rigidbody2D playerRigidbody2D;
 
     public float transitionTime = 0.5f; // Adjustable transition time in seconds
@@ -53,8 +56,9 @@ public class Abilities : MonoBehaviour
         }
     }
 
-        public void Move()
+    public void Move()
     {
+        Debug.Log("player moves");
         // Check if there are directions stored in the list
         if (gameplay.playerDirections.Count > 0)
         {
@@ -64,7 +68,7 @@ public class Abilities : MonoBehaviour
             // Convert the direction to a Vector3
             Vector3 moveDirection = GetVectorFromDirection(earliestDirection);
 
-             // Perform a raycast to check for obstacles in the movement path
+            // Perform a raycast to check for obstacles in the movement path
             RaycastHit2D hit = Physics2D.Raycast(playerTransform.position, moveDirection, 1f, LayerMask.GetMask("obstacle")); 
             // Set player rotation based on the earliest direction
             playerTransform.eulerAngles = new Vector3(0, 0, earliestDirection);
@@ -80,13 +84,21 @@ public class Abilities : MonoBehaviour
             // Calculate the target position for smooth movement
             Vector3 targetPosition = playerTransform.position + moveDirection;
 
+            // Instantiate a prefab at the center of the target cell
+            Instantiate(moveMarkerPrefab, targetPosition, Quaternion.identity);
+
             // Move the player smoothly
             StartCoroutine(MoveSmoothly(targetPosition));
 
             // Remove the earliest direction from the list
             gameplay.playerDirections.RemoveAt(0);
 
-            Debug.Log("Moved player in direction: " + moveDirection);
+            //Debug.Log("Moved player in direction: " + moveDirection);
+
+            // Find all game objects with the specified tag
+            GameObject prefabs = GameObject.FindGameObjectWithTag("PlayerMoveMarker");
+            Destroy(prefabs, 0.2f);
+            
         }
         else
         {

@@ -6,11 +6,11 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Collision detected!");
+        //Debug.Log("Collision detected!");
         // Check if the collided object has the "Player" tag
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Player detected!");
+            //Debug.Log("Player detected!");
             // Get the PlayerController script from the collided object
             PlayerController playerController = other.GetComponent<PlayerController>();
 

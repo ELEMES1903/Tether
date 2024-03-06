@@ -38,9 +38,13 @@ public class EnemyAI : MonoBehaviour
             }
     }
 
+    public LayerMask enemyLayer;
+    public float raycastDistance = 1f;
+
 // Method to find the path from the enemy to the player and move the enemy
  public void MoveTowardsPlayer()
 {
+    Debug.Log("enemy moves");
     // Find a path from the enemy's position to the player's position
     Path path = ABPath.Construct(transform.position, playerTransform.position, null);
     AstarPath.StartPath(path);
@@ -52,6 +56,14 @@ public class EnemyAI : MonoBehaviour
     // Check if there are waypoints to move towards
     if (waypoints.Length > 1)
     {
+        // Check if another enemy is already occupying the next waypoint
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(waypoints[1], 0.1f, LayerMask.GetMask("Enemy")|LayerMask.GetMask("Player"));
+        if (colliders.Length > 0)
+        {
+            //Debug.Log("Another enemy is occupying the next waypoint. Movement cancelled.");
+            return; // Cancel movement
+        }
+
         // Start a coroutine for smooth movement
         StartCoroutine(MoveSmoothly(waypoints[1]));
     }
@@ -111,7 +123,7 @@ public bool PlayerDetectedByRaycasts(out Vector2 detectedDirection)
         RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)direction * 0.5f, direction, raycastDistance, LayerMask.GetMask("Player"));
 
          // Draw the raycast for visualization
-        Debug.DrawRay(transform.position + (Vector3)direction * 0.5f, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(transform.position + (Vector3)direction * 0.5f, direction * raycastDistance, Color.red);
 
         // Check if the ray hits an object with the "Player" tag
         if (hit.collider != null && hit.collider.CompareTag("Player"))

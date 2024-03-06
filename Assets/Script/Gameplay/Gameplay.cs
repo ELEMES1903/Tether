@@ -10,7 +10,7 @@ public class GameElement
     public string name;
     public int actionPointCost;
     public Sprite actionSprite;
-    public Button uiButton;
+    public Button[] uiButtons;
 }
 
 public class Gameplay : MonoBehaviour
@@ -30,7 +30,7 @@ public class Gameplay : MonoBehaviour
 
     [Header("Clicked Elements List")]
     [SerializeField]
-    private List<string> clickedElementNames = new List<string>();
+    public List<string> clickedElementNames = new List<string>();
     public List<int> playerDirections = new List<int>(); // New list to store player directions
     
     private bool isProcessing = false;
@@ -39,64 +39,78 @@ public class Gameplay : MonoBehaviour
 
 void Start()
 {
+    AddListenerToButton();
+}
+
+public void AddListenerToButton()
+{
     foreach (GameElement element in elements)
     {
-        if (element.uiButton != null)
+        if (element.uiButtons != null)
         {
-            element.uiButton.onClick.AddListener(() =>
+            foreach (Button button in element.uiButtons)
             {
-                if (timerController != null && timerController.currentTime > 0)
+                if (button != null)
                 {
-                    if (actionEconomy != null && actionEconomy.currentPoints >= element.actionPointCost)
+                    button.onClick.AddListener(() =>
                     {
-                        actionEconomy.currentPoints -= element.actionPointCost;
-                        clickedElementNames.Add(element.name);
-                        //Debug.Log("Button Clicked for Element: " + element.name);
-
-                        // Check if the element is "Move" and it's the first time
-                        if (element.name == "Move" && isFirstMove)
+                        if (timerController != null && timerController.currentTime > 0)
                         {
-
-                                // Set Action Point Cost to 1 for the "Move" element
-                            GameElement moveElement = Array.Find(elements, el => el.name == "Move");
-                            if (moveElement != null)
+                            if (actionEconomy != null && actionEconomy.currentPoints >= element.actionPointCost)
                             {
-                                moveElement.actionPointCost = 1;
+                                actionEconomy.currentPoints -= element.actionPointCost;
+                                clickedElementNames.Add(element.name);
+                                //Debug.Log("Button Clicked for Element: " + element.name);
+
+                                // Check if the element is "Move" and it's the first time
+                                if (element.name == "Move" && isFirstMove)
+                                {
+
+                                        // Set Action Point Cost to 1 for the "Move" element
+                                    GameElement moveElement = Array.Find(elements, el => el.name == "Move");
+                                    if (moveElement != null)
+                                    {
+                                        moveElement.actionPointCost = 1;
+                                    }
+
+                                    // Skip the SetLowestImage code
+                                    isFirstMove = false; // Set the flag to false after the first "Move" entry
+
+                                    // Set the source image for FreeMove to ActionIconFreeMove
+                                    if (actionEconomy != null && actionEconomy.freeMoveImage != null)
+                                    {
+                                        actionEconomy.freeMoveImage.sprite = actionEconomy.actionIconFreeMove;
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the lowest empty image with the action sprite
+                                    actionEconomy.SetLowestImage(element.actionSprite);
+                                }
+
+                                int currentPlayerDirection = GetPlayerDirection();
+                                playerDirections.Add(currentPlayerDirection);
+                                //Debug.Log("Player Direction: " + currentPlayerDirection);
+
                             }
-
-                            // Skip the SetLowestImage code
-                            isFirstMove = false; // Set the flag to false after the first "Move" entry
-
-                            // Set the source image for FreeMove to ActionIconFreeMove
-                            if (actionEconomy != null && actionEconomy.freeMoveImage != null)
+                            else
                             {
-                                actionEconomy.freeMoveImage.sprite = actionEconomy.actionIconFreeMove;
+                                Debug.Log("Insufficient points for Element: " + element.name);
                             }
                         }
                         else
                         {
-                            // Update the lowest empty image with the action sprite
-                            actionEconomy.SetLowestImage(element.actionSprite);
-                        }
-
-                        int currentPlayerDirection = GetPlayerDirection();
-                        playerDirections.Add(currentPlayerDirection);
-                        //Debug.Log("Player Direction: " + currentPlayerDirection);
-
-                    }
-                    else
-                    {
-                        Debug.Log("Insufficient points for Element: " + element.name);
-                    }
+                            Debug.Log("Timer is not above 0 seconds. Button click ignored.");
+                        }             
+                    });
                 }
-                else
-                {
-                    Debug.Log("Timer is not above 0 seconds. Button click ignored.");
-                }
-            });
+            }
         }
     }
 }
+
+
+
 
 void EnsureMinimumEntries()
 {
@@ -164,7 +178,7 @@ void EnsureMinimumEntries()
         foreach (string elementName in namesCopy)
         {
 
-            Debug.Log("Processing Clicked Element: " + elementName);
+            //Debug.Log("Processing Clicked Element: " + elementName);
 
             // Call the function with the same name as the element from the Abilities script
             MethodInfo method = typeof(Abilities).GetMethod(elementName);

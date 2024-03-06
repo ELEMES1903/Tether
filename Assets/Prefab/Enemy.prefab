@@ -177,6 +177,10 @@ MonoBehaviour:
   swordSlashPrefab: {fileID: 5626514559240964537, guid: f760c0a9d0265c546954c3851272d328, type: 3}
   playerTransform: {fileID: 0}
   transitionTime: 0.5
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  raycastDistance: 1
 --- !u!114 &1059154802946302531
 MonoBehaviour:
   m_ObjectHideFlags: 0
